@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateFabricanteTable extends Migration {
+class CreateClientsTable extends Migration {
 
     /**
      * Run the migrations.
@@ -12,12 +12,16 @@ class CreateFabricanteTable extends Migration {
      * @return void
      */
     public function up() {
-        Schema::create('fabricantes', function (Blueprint $table) {
+        Schema::create('clients', function (Blueprint $table) {
 
-            $table->increments('id');      
-            $table->string('cnpj', 24)->nullable();
+            $table->increments('id');     
+            
+            $table->integer('id_user')->unsigned()->nullable();
+            $table->foreign('id_user')->references('id')->on('users');
+            
             $table->string('name', 100)->nullable();
-            $table->string('name_marca', 100)->nullable();
+            $table->string('email', 30)->nullable();
+            $table->string('telefone', 15)->nullable();
             $table->enum('status', array('A', 'I'))->nullable();                        
             $table->timestamps();
         });
@@ -29,7 +33,7 @@ class CreateFabricanteTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::dropIfExists('fabricantes');
+        Schema::dropIfExists('clients');
     }
 
 }

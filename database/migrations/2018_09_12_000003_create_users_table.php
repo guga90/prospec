@@ -32,14 +32,13 @@ class CreateUsersTable extends Migration {
             $table->rememberToken();
             $table->timestamps();
         });
-        
-        DB::unprepared($this->getData());        
+
+        DB::unprepared($this->getData());
     }
 
     public function getData() {
-        //return "insert into users (id, id_store, name, cpf, cell_phone, home_phone, cep, address, complement, sector, city, state, email, status, profile, password, remember_token, created_at, updated_at) values('2',NULL,'Gustavo Nascimento Mendanha',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'gustavomendanha90@gmail.com',NULL,NULL,'$2y$10\$A9tNoYfdC2cxyB/.0jayvuOknqYYqywXAqfGGVLGapnqiIuLq0896',NULL,'2018-01-25 18:36:33','2018-01-25 18:36:33');";
         return "insert  into `users`(`id`,`name`,`cpf`,`cell_phone`,`home_phone`,`cep`,`address`,`complement`,`sector`,`city`,`state`,`email`,`status`,`profile`,`password`,`remember_token`,`created_at`,`updated_at`) values 
-                (1,'Gustavo Nascimento Mendanha','017.132.381-52','(62) 98314-1345','(62) 3333-3333','74890-721','Rua Dom Pedro I','N 51','Residencial Ville de France ','Goiânia','GO','gustavomendanha90@gmail.com','A','A','$2y$10$6oUU7g0RQ43ijA1bosjF/eVh9MpUm8iA/PgqrGnRcogtHwDJZw6Ei','obWuLarVsCbDGALoxUWiR0aoLLUriN2FVcfHPhdBTxfdKgg1dRKXshQxVaMZ','2018-01-25 18:36:33','2018-01-25 19:30:59');";
+                (1,'Gustavo Nascimento Mendanha','012.132.381-52','(62) 98314-1345','(62) 3333-3333','74890-721','Rua Dom Pedro I','N 51','Residencial Ville de France ','Goiânia','GO','gustavomendanha90@gmail.com','A','A','$2y$10$6oUU7g0RQ43ijA1bosjF/eVh9MpUm8iA/PgqrGnRcogtHwDJZw6Ei','obWuLarVsCbDGALoxUWiR0aoLLUriN2FVcfHPhdBTxfdKgg1dRKXshQxVaMZ','2018-01-25 18:36:33','2018-01-25 19:30:59');";
     }
 
     /**
