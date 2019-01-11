@@ -19,11 +19,10 @@ class CreateEmailEnviosTable extends Migration {
             $table->integer('id_client')->unsigned()->nullable();
             $table->foreign('id_client')->references('id')->on('clients');
 
-            $table->integer('id_sms_campanha')->unsigned()->nullable();
-            $table->foreign('id_sms_campanha')->references('id')->on('sms_campanhas'); 
+            $table->integer('id_email_campanha')->unsigned()->nullable();
+            $table->foreign('id_email_campanha')->references('id')->on('email_campanhas'); 
 
-            $table->text('msg', 50)->nullable();
-            $table->text('porta', 50)->nullable();
+            $table->text('log', 50)->nullable();
             $table->enum('status', array('S', 'E'))->nullable();
             $table->timestamps();
         });

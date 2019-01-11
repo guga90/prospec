@@ -22,8 +22,7 @@ class CreateSmsEnviosTable extends Migration {
             $table->integer('id_sms_campanha')->unsigned()->nullable();
             $table->foreign('id_sms_campanha')->references('id')->on('sms_campanhas'); 
 
-            $table->text('log', 50)->nullable();
-            $table->text('porta', 50)->nullable();
+            $table->text('log')->nullable();
             $table->enum('status', array('S', 'E'))->nullable();
             $table->timestamps();
         });

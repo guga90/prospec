@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use App\Grupo;
+use App\SmsEnvios;
+use App\EmailEnvios;
+use App\Robo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -25,50 +28,82 @@ class RoboController extends Controller {
 
     public function sendemail() {
 
-        /*  $servidor = $this->getServidorEmail();
+        $servidor = $this->getServidorEmail();
 
-          $sale = $this->getCampanhaEmail('E');
-          $sale->email_cc = $config->email_cc; */
+        if (!empty($servidor)) {
 
-        $mail = new PHPMailer(true); // Passing `true` enables exceptions
-        try {
+            $campanhas = $this->getCampanhaEmail();
 
-            // Configuração dos dados do servidor e tipo de conexão (Estes dados você obtem com seu host)
-            $mail->IsSMTP(); // Define que a mensagem será SMTP
-            $mail->Host = "cloud14.rgs.net.br"; // Endereço do servidor SMTP
-            $mail->Port = "587"; // Porta do servidor SMTP
-            $mail->SMTPAuth = true; // Autenticação (True: Se o email será autenticado ou False: se o Email não será autenticado)
-            $mail->Username = 'naoresponda@gustavomendanha.com.br'; // Usuário do servidor SMTP
-            $mail->Password = 'i8o9p0'; // A Senha do email indicado acima
-            // Remetente (Identificação que será mostrada para quem receber o email)
-            $mail->From = 'gustavomendanha90@gmail.com';
-            $mail->FromName = 'Gustavo';
+            foreach ($campanhas as $campanha) {
 
-            // Destinatário
-            $mail->AddAddress('gustavomendanha90@gmail.com', 'Nome do Destinatário');
+                try {
 
-            // Opcional (Se quiser enviar cópia do email)
-            // $mail->AddCC('copia@dominio.com.br', 'Copia');
-            // $mail->AddBCC('CopiaOculta@dominio.com.br', 'Copia Oculta');
-            // Define tipo de Mensagem que vai ser enviado
-            $mail->IsHTML(true); // Define que o e-mail será enviado como HTML
-            // Assunto e Mensagem do email
-            $mail->Subject = "Contato via site www.gustavomendanha.com.br";
-            $mail->Body = "<strong>Nome: </strong>" . 'Gustavo' .
-                    "<br><strong>E-mail: </strong>" . 'gustavomendanha90@gmail.com' .
-                    "<br><strong>Mensagem: </strong>" . 'Cara!';
+                    $retorno = $this->executarEmail($servidor, $campanha);
 
+                    EmailEnvios::create(
+                            array('id_client' => $campanha->id_client,
+                                'id_email_campanha' => $campanha->id_campanha,
+                                'log' => $retorno['msg'],
+                                'status' => $retorno['tipo'])
+                    );
 
-            $mail->send();
-            echo 'Envidado com sucesso';
-        } catch (Exception $e) {
-            echo 'Mensagem não enviada. Mailer Error: ', $mail->ErrorInfo;
+                    Robo::echoPlus('Sucesso');
+                } catch (Exception $e) {
+                    Robo::echoPlus('Erro ao salvar log.' . $e->getMessage());
+                }
+            }
+        } else {
+            Robo::echoPlus('Nenhum servidor de E-mail encontrado.');
         }
     }
 
-    public function sendsms() {
+    public function executarEmail($servidor, $campanha) {
 
-        die('sendsms!');
+        $mail = new PHPMailer(true); // Passing `true` enables exceptions
+
+        try {
+
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
+// Configuração dos dados do servidor e tipo de conexão (Estes dados você obtem com seu host)
+            $mail->IsSMTP(); // Define que a mensagem será SMTP   
+            $mail->CharSet = 'utf-8';
+            $mail->Host = $servidor->host; // Endereço do servidor SMTP
+            $mail->Port = $servidor->porta; // Porta do servidor SMTP
+            $mail->SMTPSecure = env('MAIL_ENCRYPTION');
+            $mail->SMTPAuth = true; // Autenticação (True: Se o email será autenticado ou False: se o Email não será autenticado)
+            $mail->Username = $servidor->user; // Usuário do servidor SMTP
+            $mail->Password = $servidor->password; // A Senha do email indicado acima
+//
+            // Remetente (Identificação que será mostrada para quem receber o email)
+            $mail->From = $servidor->user;
+            $mail->FromName = 'Gustavo';
+
+// Destinatário
+            $mail->AddAddress($campanha->email_client, $campanha->name_client);
+
+// Opcional (Se quiser enviar cópia do email)
+// $mail->AddCC('copia@dominio.com.br', 'Copia');
+// $mail->AddBCC('CopiaOculta@dominio.com.br', 'Copia Oculta');
+// Define tipo de Mensagem que vai ser enviado
+            $mail->IsHTML(true); // Define que o e-mail será enviado como HTML
+// Assunto e Mensagem do email
+
+            $mail->Subject = $campanha->name_campanha;
+            $mail->Body = $campanha->msg_campanha;
+
+            $mail->send();
+
+            return array('tipo' => 'S', 'msg' => 'Mensagem enviada.');
+        } catch (Exception $e) {
+            return array('tipo' => 'E', 'msg' => ('Mensagem não enviada. Mailer Error: ' . $mail->ErrorInfo));
+        }
     }
 
     public function getServidorEmail() {
@@ -82,42 +117,151 @@ class RoboController extends Controller {
         return $server;
     }
 
-    public function getCampanha($tipo) {
+    public function getCampanhaEmail() {
 
-        $sale = DB::table('sales')->select([
-                    'sales.id',
-                    'sales.transaction',
-                    'sales.amount',
-                    'sales.price',
-                    'sales.total',
-                    'sales.iof',
-                    'sales.deliver_val',
-                    'sales.id_address',
-                    'sales.transaction',
-                    'sales.type_pgto',
-                    'sales.status_pagseguro',
-                    'users.email',
-                    DB::raw("DATE_FORMAT(sales.date_sale, '%d/%m/%Y %H:%i') as date_sale"),
-                    'users.name as name_user',
-                    'types.name as name_type',
-                    'coins.name as name_coin',
-                    'coins.symbol',
-                    'addresses.name as name_address',
-                    'cep as cep_address',
-                    'address as address_address',
-                    'complement as complement_address',
-                    'sector as sector_address',
-                    'state as state_address',
-                    'city as city_address',
+        $campanha = DB::table('email_campanhas')->select([
+                            'clients.id as id_client',
+                            'clients.name as name_client',
+                            'clients.email as email_client',
+                            'clients.telefone as telefone_client',
+                            'email_campanhas.id as id_campanha',
+                            'email_campanhas.name as name_campanha',
+                            'email_campanhas.msg as msg_campanha',
+                                //DB::raw("DATE_FORMAT(email_campanhas.created_at, '%d/%m/%Y %H:%i') as created_at"),
+                        ])
+                        ->join('email_campanha_grupos', 'email_campanha_grupos.id_email_campanha', '=', 'email_campanhas.id')
+                        ->join('clientsgrupos', 'clientsgrupos.id_grupo', '=', 'email_campanha_grupos.id_grupo')
+                        ->join('clients', 'clients.id', '=', 'clientsgrupos.id_client')
+                        ->where('email_campanhas.status', '=', 'A')
+                        ->whereRaw(DB::raw('NOT EXISTS (SELECT id FROM email_envios '
+                                        . 'WHERE email_envios.id_client = clients.id '
+                                        . 'AND email_envios.id_email_campanha = email_campanhas.id)')
+                        )->limit(10)->get();
+
+        return $campanha;
+    }
+
+    #############SMS###############
+
+    public function sendsms() {
+
+        $servidor = $this->getServidorSms();
+
+        if (!empty($servidor)) {
+
+            $campanhas = $this->getCampanhaSms();
+
+            foreach ($campanhas as $campanha) {
+
+                try {
+
+                    $retorno = $this->executarSms($servidor, $campanha);
+
+                    SmsEnvios::create(
+                            array('id_client' => $campanha->id_client,
+                                'id_sms_campanha' => $campanha->id_campanha,
+                                'log' => $retorno['msg'],
+                                'status' => $retorno['tipo'])
+                    );
+
+                    Robo::echoPlus('Sucesso');
+                } catch (Exception $e) {
+                    Robo::echoPlus('Erro ao salvar log.' . $e->getMessage());
+                }
+            }
+        } else {
+            Robo::echoPlus('Nenhum servidor de SMS encontrado.');
+        }
+    }
+
+    public function executarSms($servidor, $campanha) {
+
+        try {
+
+            if (empty($campanha->telefone_client)) {
+                throw new Exception('Sem numero de telefone.');
+            }
+
+            $remover = array("à" => "a", "á" => "a", "ã" => "a", "â" => "a", "é" => "e", "ê" => "e", "ì" => "i", "í" => "i", "ó" => "o", "õ" => "o", "ô" => "o", "ú" => "u", "ü" => "u", "ç" => "c", "À" => "A", "Á" => "A", "Ã" => "A", "Â" => "A", "É" => "E", "Ê" => "E", "Í" => "I", "Ó" => "O", "Õ" => "O", "Ô" => "O", "Ù" => "U", "Ú" => "U", "Ü" => "U", "Ç" => "C");
+            $msg = strtr($campanha->msg_campanha, $remover);
+
+            $nTelefone = str_replace(array(' ', '-', '(', ')'), '', $campanha->telefone_client);
+
+            $url = $servidor->host;
+
+            /* $_GET Parameters to Send */
+            $params = array('account' => $servidor->user,
+                'code' => $servidor->password,
+                'to' => ('55' . $nTelefone),
+                'dispatch' => 'send',
+                'msg' => strip_tags($msg));
+
+            /* Update URL to container Query String of Paramaters */
+            $url .= '?' . http_build_query($params);
+
+            /* cURL Resource */
+            $ch = curl_init();
+            /* Set URL */
+            curl_setopt($ch, CURLOPT_URL, $url);
+            /* Tell cURL to return the output */
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            /* Tell cURL NOT to return the headers */
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            /* Execute cURL, Return Data */
+            $retorno = curl_exec($ch);
+            /* Check HTTP Code */
+            $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            /* Close cURL Resource */
+            curl_close($ch);
+
+            if ($retorno != '000 - Message sent') {
+                throw new Exception('O servidor de SMS retornou: ' . $retorno);
+            }
+
+            /* 200 Response! */
+            if ($status != 200) {
+                throw new Exception('Não foi possivel comunicar com endereco: ' . $servidor->host);
+            }
+
+            return array('tipo' => 'S', 'msg' => 'Mensagem enviada.');
+        } catch (Exception $e) {
+            return array('tipo' => 'E', 'msg' => ('Mensagem não enviada. Mailer Error: ' . $e->getMessage()));
+        }
+    }
+
+    public function getServidorSms() {
+
+        $server = DB::table('sms_servers')->select([
+                    '*',
                 ])
-                ->join('users', 'users.id', '=', 'sales.id_user')
-                ->join('types', 'types.id', '=', 'sales.id_type')
-                ->join('coins', 'coins.id', '=', 'sales.id_coin')
-                ->leftJoin('addresses', 'addresses.id', '=', 'sales.id_address')
-                ->where(DB::raw("MD5(sales.id)"), '=', $idSale)
+                ->where('sms_servers.status', '=', 'A')
                 ->first();
 
-        return $sale;
+        return $server;
+    }
+
+    public function getCampanhaSms() {
+
+        $campanha = DB::table('sms_campanhas')->select([
+                            'clients.id as id_client',
+                            'clients.name as name_client',
+                            'clients.email as sms_email',
+                            'clients.telefone as telefone_client',
+                            'sms_campanhas.id as id_campanha',
+                            'sms_campanhas.name as name_campanha',
+                            'sms_campanhas.msg as msg_campanha',
+                                //DB::raw("DATE_FORMAT(sms_campanhas.created_at, '%d/%m/%Y %H:%i') as created_at"),
+                        ])
+                        ->join('sms_campanha_grupos', 'sms_campanha_grupos.id_sms_campanha', '=', 'sms_campanhas.id')
+                        ->join('clientsgrupos', 'clientsgrupos.id_grupo', '=', 'sms_campanha_grupos.id_grupo')
+                        ->join('clients', 'clients.id', '=', 'clientsgrupos.id_client')
+                        ->where('sms_campanhas.status', '=', 'A')
+                        ->whereRaw(DB::raw('NOT EXISTS (SELECT id FROM sms_envios '
+                                        . 'WHERE sms_envios.id_client = clients.id '
+                                        . 'AND sms_envios.id_sms_campanha = sms_campanhas.id)')
+                        )->limit(10)->get();
+
+        return $campanha;
     }
 
 }
