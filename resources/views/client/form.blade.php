@@ -69,6 +69,18 @@
                             </div>
                         </div>
 
+                        <div class=" col-md-6">
+                            <div class="form-group">
+                                <label for="birth_date">Data Nasc.</label>
+                                <input required="true" required="true" type="text" id="birth_date" name="birth_date" value="{{ old('birth_date', (empty($client->birth_date) ? '' : $client->birth_date)) }}" class="form-control mask_date" placeholder="Data Nasc.">
+                                @if ($errors->has('birth_date'))
+                                <span class="help-block">
+                                    <strong>{{ $errors->first('birth_date') }}</strong>
+                                </span>
+                                @endif
+                            </div>                          
+                        </div>  
+
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="status">Status</label>
@@ -89,8 +101,8 @@
                                 <label for="id_grupo">Grupo</label>
                                 <select id="id_grupo" name="id_grupo[]" class="form-control multiple select2" multiple>
                                     @foreach($grupos as $grupo)
-                                     <option {{$grupo->active ? 'selected' : ''}} value="{{$grupo->id}}" >{{$grupo->name}}</option>
-                                     @endforeach
+                                    <option {{$grupo->active ? 'selected' : ''}} value="{{$grupo->id}}" >{{$grupo->name}}</option>
+                                    @endforeach
                                 </select>
                                 @if ($errors->has('id_grupo'))
                                 <span class="help-block">

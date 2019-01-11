@@ -80,11 +80,16 @@ class ClientController extends Controller {
     protected function formatToSave(array $data) {
 
         $data['id_user'] = Auth::user()->id;
+        
+        $date = Carbon::createFromFormat('d/m/Y', $data['birth_date']);
+        $data['birth_date'] = $date->format('Y-m-d');
 
         return $data;
     }
 
     protected function formatToEdit($client) {
+        $date = Carbon::createFromFormat('Y-m-d', $client->birth_date);
+        $client->birth_date = $date->format('d/m/Y');
         return $client;
     }
 

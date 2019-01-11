@@ -13,6 +13,12 @@
 
 Auth::routes();
 
+Route::group(['prefix' => 'robo', 'middleware' => 'guest'], function () {
+    Route::get('/', 'RoboController@index')->name('robo');
+    Route::get('/sendemail', 'RoboController@sendemail')->name('robo.sendemail');
+    Route::get('/sendsms', 'RoboController@sendsms')->name('robo.sendsms');
+});
+
 Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/', 'DashboardController@index')->name('index');
