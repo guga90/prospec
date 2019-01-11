@@ -166,6 +166,8 @@
                                 <li><a href="{{route('client')}}"><i class="fa fa-circle-o"></i>Cliente</a></li>
                                 <li><a href="{{route('emailcampanha')}}"><i class="fa fa-circle-o"></i>E-mail Campanha</a></li>
                                 <li><a href="{{route('smscampanha')}}"><i class="fa fa-circle-o"></i>SMS Campanha</a></li>
+                                <li><a href="{{route('smsserver')}}"><i class="fa fa-circle-o"></i>Servidor de SMS</a></li>
+                                <li><a href="{{route('emailserver')}}"><i class="fa fa-circle-o"></i>Servidor E-mail</a></li>
                             </ul>
                         </li>
 

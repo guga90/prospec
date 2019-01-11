@@ -69,3 +69,25 @@ Route::group(['prefix' => 'smscampanha', 'middleware' => 'auth'], function () {
     Route::get('/{id}/edit', 'SmscampanhaController@edit')->name('smscampanha.edit');
     Route::post('/listar', 'SmscampanhaController@listar')->name('smscampanha.listar');
 });
+
+
+Route::group(['prefix' => 'emailserver', 'middleware' => 'auth'], function () {
+    Route::get('/', 'EmailserverController@index')->name('emailserver');
+    Route::post('/', 'EmailserverController@store')->name('emailserver.store');
+    Route::get('/create', 'EmailserverController@create')->name('emailserver.create');
+    Route::put('/{id}', 'EmailserverController@update')->name('emailserver.update');
+    Route::delete('/{id}', 'EmailserverController@destroy')->name('emailserver.destroy');
+    Route::get('/{id}', 'EmailserverController@show')->name('emailserver.show');
+    Route::get('/{id}/edit', 'EmailserverController@edit')->name('emailserver.edit');
+});
+
+
+Route::group(['prefix' => 'smsserver', 'middleware' => 'auth'], function () {
+    Route::get('/', 'SmsserverController@index')->name('smsserver');
+    Route::post('/', 'SmsserverController@store')->name('smsserver.store');
+    Route::get('/create', 'SmsserverController@create')->name('smsserver.create');
+    Route::put('/{id}', 'SmsserverController@update')->name('smsserver.update');
+    Route::delete('/{id}', 'SmsserverController@destroy')->name('smsserver.destroy');
+    Route::get('/{id}', 'SmsserverController@show')->name('smsserver.show');
+    Route::get('/{id}/edit', 'SmsserverController@edit')->name('smsserver.edit');
+});
