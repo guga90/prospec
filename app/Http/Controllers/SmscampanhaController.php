@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-use App\EmailCampanha;
-use App\EmailCampanhaGrupo;
+use App\SmsCampanha;
+use App\SmsCampanhaGrupo;
 use App\Grupo;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
-class EmailcampanhaController extends Controller {
+class SmscampanhaController extends Controller {
 
     /**
      * Create a new controller instance.
@@ -25,14 +25,14 @@ class EmailcampanhaController extends Controller {
 
     public function index() {
 
-        $emailcampanhas = Emailcampanha::orderBy('created_at', 'desc')->paginate(10000);
-        return view('emailcampanha.data', ['emailcampanhas' => $emailcampanhas]);
+        $smscampanhas = Smscampanha::orderBy('created_at', 'desc')->paginate(10000);
+        return view('smscampanha.data', ['smscampanhas' => $smscampanhas]);
     }
 
     public function create() {
 
         $grupos = Grupo::all();
-        return view('emailcampanha.form', ['grupos' => $grupos]);
+        return view('smscampanha.form', ['grupos' => $grupos]);
     }
 
     public function store(Request $request) {
@@ -44,11 +44,11 @@ class EmailcampanhaController extends Controller {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $emailcampanha = Emailcampanha::create($data);
+        $smscampanha = Smscampanha::create($data);
 
-        $this->createEmailCampanhaGrupos($emailcampanha->id, $data);
+        $this->createSmsCampanhaGrupos($smscampanha->id, $data);
 
-        return redirect()->route('emailcampanha')->with('sucess', 'Sucesso!');
+        return redirect()->route('smscampanha')->with('sucess', 'Sucesso!');
     }
 
     /**
@@ -71,8 +71,8 @@ class EmailcampanhaController extends Controller {
         return $data;
     }
 
-    protected function formatToEdit($emailcampanha) {
-        return $emailcampanha;
+    protected function formatToEdit($smscampanha) {
+        return $smscampanha;
     }
 
     public function update(Request $request, $id) {
@@ -84,31 +84,31 @@ class EmailcampanhaController extends Controller {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        Emailcampanha::find($id)->update($data);
+        Smscampanha::find($id)->update($data);
 
-        $this->createEmailCampanhaGrupos($id, $data);
+        $this->createSmsCampanhaGrupos($id, $data);
 
-        return redirect()->route('emailcampanha')->with('sucess', 'Sucesso!');
+        return redirect()->route('smscampanha')->with('sucess', 'Sucesso!');
     }
 
     public function destroy($id) {
 
-        Emailcampanha::find($id)->delete();
-        return redirect()->route('emailcampanha')->with('sucess', 'Sucesso!');
+        Smscampanha::find($id)->delete();
+        return redirect()->route('smscampanha')->with('sucess', 'Sucesso!');
     }
 
     public function edit($id) {
 
-        $emailcampanha = Emailcampanha::findOrFail($id);
-        $emailcampanha = $this->formatToEdit($emailcampanha);
+        $smscampanha = Smscampanha::findOrFail($id);
+        $smscampanha = $this->formatToEdit($smscampanha);
 
         $gruposactive = array();
         $grupos = Grupo::all();
         foreach ($grupos as $i => $grupo) {
 
-            $clientsgrupos = DB::table('email_campanha_grupos')->select()
-                    ->where('email_campanha_grupos.id_email_campanha', '=', $id)
-                    ->where('email_campanha_grupos.id_grupo', '=', $grupo->id)
+            $clientsgrupos = DB::table('sms_campanha_grupos')->select()
+                    ->where('sms_campanha_grupos.id_sms_campanha', '=', $id)
+                    ->where('sms_campanha_grupos.id_grupo', '=', $grupo->id)
                     ->first();
 
             if (!empty($clientsgrupos->id)) {
@@ -120,17 +120,17 @@ class EmailcampanhaController extends Controller {
             $gruposactive[] = $grupo;
         }
 
-        return view('emailcampanha.form')->with(array('emailcampanha' => $emailcampanha, 'grupos' => $gruposactive));
+        return view('smscampanha.form')->with(array('smscampanha' => $smscampanha, 'grupos' => $gruposactive));
     }
 
-    public function createEmailCampanhaGrupos($emailCampanhaId, $data) {
+    public function createSmsCampanhaGrupos($smsCampanhaId, $data) {
 
-        DB::table('email_campanha_grupos')->where('id_email_campanha', '=', $emailCampanhaId)->delete();
+        DB::table('sms_campanha_grupos')->where('id_sms_campanha', '=', $smsCampanhaId)->delete();
 
-        $dadossave = array('id_email_campanha' => $emailCampanhaId);
+        $dadossave = array('id_sms_campanha' => $smsCampanhaId);
         foreach ($data['id_grupo'] as $grupo) {
             $dadossave['id_grupo'] = $grupo;
-            EmailCampanhaGrupo::create($dadossave);
+            SmsCampanhaGrupo::create($dadossave);
         }
     }
 

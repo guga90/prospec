@@ -58,3 +58,14 @@ Route::group(['prefix' => 'emailcampanha', 'middleware' => 'auth'], function () 
     Route::get('/{id}/edit', 'EmailcampanhaController@edit')->name('emailcampanha.edit');
     Route::post('/listar', 'EmailcampanhaController@listar')->name('emailcampanha.listar');
 });
+
+Route::group(['prefix' => 'smscampanha', 'middleware' => 'auth'], function () {
+    Route::get('/', 'SmscampanhaController@index')->name('smscampanha');
+    Route::post('/', 'SmscampanhaController@store')->name('smscampanha.store');
+    Route::get('/create', 'SmscampanhaController@create')->name('smscampanha.create');
+    Route::put('/{id}', 'SmscampanhaController@update')->name('smscampanha.update');
+    Route::delete('/{id}', 'SmscampanhaController@destroy')->name('smscampanha.destroy');
+    Route::get('/{id}', 'SmscampanhaController@show')->name('smscampanha.show');
+    Route::get('/{id}/edit', 'SmscampanhaController@edit')->name('smscampanha.edit');
+    Route::post('/listar', 'SmscampanhaController@listar')->name('smscampanha.listar');
+});

@@ -165,6 +165,7 @@
                                 <li><a href="{{route('grupo')}}"><i class="fa fa-circle-o"></i>Grupo</a></li>
                                 <li><a href="{{route('client')}}"><i class="fa fa-circle-o"></i>Cliente</a></li>
                                 <li><a href="{{route('emailcampanha')}}"><i class="fa fa-circle-o"></i>E-mail Campanha</a></li>
+                                <li><a href="{{route('smscampanha')}}"><i class="fa fa-circle-o"></i>SMS Campanha</a></li>
                             </ul>
                         </li>
 

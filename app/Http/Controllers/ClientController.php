@@ -79,7 +79,7 @@ class ClientController extends Controller {
 
     protected function formatToSave(array $data) {
 
-        $data['id_user'] = 1;
+        $data['id_user'] = Auth::user()->id;
 
         return $data;
     }
