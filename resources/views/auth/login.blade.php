@@ -36,7 +36,7 @@
     <body class="hold-transition login-page">
         <div class="login-box">
             <div class="login-logo">
-                <a href="#"><b>D'</b>médica</a>
+                <a href="#"><b>P</b>OSPEC</a>
             </div>
             <!-- /.login-logo -->
             <div class="login-box-body">

@@ -22,6 +22,7 @@ class CreateClientsTable extends Migration {
             $table->string('name', 100)->nullable();
             $table->string('email', 30)->nullable();
             $table->string('telefone', 15)->nullable();
+            $table->text('info')->nullable();
             $table->enum('status', array('A', 'I'))->nullable();                        
             $table->timestamps();
         });

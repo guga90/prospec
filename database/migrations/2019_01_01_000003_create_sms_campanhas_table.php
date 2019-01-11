@@ -12,17 +12,15 @@ class CreateSmsCampanhasTable extends Migration {
      * @return void
      */
     public function up() {
-        
+
         Schema::create('sms_campanhas', function (Blueprint $table) {
 
-            $table->increments('id');     
-            
+            $table->increments('id');
+            $table->text('name', 50)->nullable();
             $table->integer('id_user')->unsigned()->nullable();
             $table->foreign('id_user')->references('id')->on('users');
-            
             $table->text('msg')->nullable();
-            
-            $table->enum('status', array('A', 'I'))->nullable();                        
+            $table->enum('status', array('A', 'I'))->nullable();
             $table->timestamps();
         });
     }

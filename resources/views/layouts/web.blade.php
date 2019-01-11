@@ -36,6 +36,8 @@
         <link rel="stylesheet" href="{{ asset('AdminLTE/bower_components/select2/dist/css/select2.min.css') }}">
         
         <link rel="stylesheet" href="{{ asset('jquery-linedtextarea/jquery-linedtextarea.css') }}">
+        
+        <link rel="stylesheet" href="{{ asset('summernote-0.8.9-dist/dist/summernote.css') }}">
         <!-- Theme style -->
         <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/AdminLTE.min.css') }}">
 
@@ -60,9 +62,9 @@
                 <!-- Logo -->
                 <a href="#" class="logo">
                     <!-- mini logo for sidebar mini 50x50 pixels -->
-                    <span class="logo-mini"><b>D'</b></span>
+                    <span class="logo-mini"><b>PROSPEC</b></span>
                     <!-- logo for regular state and mobile devices -->
-                    <span class="logo-lg"><b>D'</b>médica</span>
+                    <span class="logo-lg"><b>P</b>ROSPEC</span>
                 </a>
                 <!-- Header Navbar: style can be found in header.less -->
                 <nav class="navbar navbar-static-top">
@@ -146,7 +148,7 @@
                         <li class="header">MENU</li>
                         <li>
                             <a href="{{route('dashboard')}}">
-                                <i class="fa fa-th"></i> <span>Pesquisa</span>
+                                <i class="fa fa-th"></i> <span>Home</span>
                                 <span class="pull-right-container">
                                     <small class="label pull-right bg-green">novo</small>
                                 </span>
@@ -160,15 +162,9 @@
                                 </span>
                             </a>
                             <ul class="treeview-menu">
-                                <li><a href="{{route('especialidade')}}"><i class="fa fa-circle-o"></i>Especialidade</a></li>
-                                <li><a href="{{route('matmed')}}"><i class="fa fa-circle-o"></i>Matmed</a></li>
-                                <li><a href="{{route('fabricante')}}"><i class="fa fa-circle-o"></i>Fabricante</a></li>
-                                <li><a href="{{route('kit')}}"><i class="fa fa-circle-o"></i>Kit</a></li>
-                                <li><a href="{{route('procedimento')}}"><i class="fa fa-circle-o"></i>Procedimento</a></li>
-                                <li><a href="{{route('tmatmed')}}"><i class="fa fa-circle-o"></i>Tabela de MatMed</a></li>
-                                <li><a href="{{route('tprocedimento')}}"><i class="fa fa-circle-o"></i>Tabela de Procedimento</a></li>
-                                <li><a href="{{route('user')}}"><i class="fa fa-circle-o"></i>Usuário</a></li>
-                                <li><a href="{{route('validarxml')}}"><i class="fa fa-circle-o"></i>Validador</a></li>
+                                <li><a href="{{route('grupo')}}"><i class="fa fa-circle-o"></i>Grupo</a></li>
+                                <li><a href="{{route('client')}}"><i class="fa fa-circle-o"></i>Cliente</a></li>
+                                <li><a href="{{route('emailcampanha')}}"><i class="fa fa-circle-o"></i>E-mail Campanha</a></li>
                             </ul>
                         </li>
 
@@ -179,7 +175,6 @@
 
             <!-- Content Wrapper. Contains page content -->
             <div class="content-wrapper">
-
 
                 @if (session('sucess'))
                 <div class="alert alert-success alert-dismissible">
@@ -496,6 +491,7 @@
         <script src="{{ asset('AdminLTE/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
         <script src="{{ asset('AdminLTE/bower_components/bootstrap/js/carousel.js') }}"></script>
         <script src="{{ asset('AdminLTE/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
+        <script src="{{ asset('summernote-0.8.9-dist/dist/summernote.js') }}"></script>
         <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
         <script src="{{ asset('js/controller/'.current(explode('.', Route::currentRouteName())).'.js') }}"></script>
         <script src="{{ asset('js/geral.js') }}"></script>
