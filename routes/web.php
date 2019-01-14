@@ -13,7 +13,7 @@
 
 Auth::routes();
 
-Route::group(['prefix' => 'robo', 'middleware' => 'guest'], function () {
+Route::group(['prefix' => 'robo'], function () {
     Route::get('/', 'RoboController@index')->name('robo');
     Route::get('/sendemail', 'RoboController@sendemail')->name('robo.sendemail');
     Route::get('/sendsms', 'RoboController@sendsms')->name('robo.sendsms');
