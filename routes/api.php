@@ -16,3 +16,9 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::group(['prefix' => 'robo'], function () {
+    Route::get('/', 'RoboController@index')->name('robo');
+    Route::get('/sendemail', 'RoboController@sendemail')->name('robo.sendemail');
+    Route::get('/sendsms', 'RoboController@sendsms')->name('robo.sendsms');
+});
