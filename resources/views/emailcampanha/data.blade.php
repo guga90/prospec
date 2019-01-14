@@ -43,7 +43,20 @@
 
                             <tr>
                                 <td>{{ $emailcampanha->name }}</td>
-                                <td>{{ $emailcampanha->status == 'A' ? 'Ativo' : 'Inativo'  }}</td>
+                                <td>
+                                    @switch($emailcampanha->status)
+                                    @case('A')
+                                    Aguardando
+                                    @break
+
+                                    @case('E')
+                                    Executando
+                                    @break
+
+                                    @default
+                                    Finalizado
+                                    @endswitch
+                                </td>
                                 <td>
                                     <div class="row">
                                     <!--a class="btn btn-info btn-sm" href="{{ route('emailcampanha.show',$emailcampanha->id) }}"><i class="glyphicon glyphicon-th-large"></i></a-->

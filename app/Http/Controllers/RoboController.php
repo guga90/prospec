@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use App\Grupo;
 use App\SmsEnvios;
+use App\EmailCampanha;
+use App\SmsCampanha;
 use App\EmailEnvios;
 use App\Robo;
 use Illuminate\Support\Facades\Auth;
@@ -32,32 +34,50 @@ class RoboController extends Controller {
 
         if (!empty($servidor)) {
 
-            $campanhas = $this->getCampanhaEmail();
+            $campanha = $this->getCampanhaEmail();
 
-            foreach ($campanhas as $campanha) {
+            if (!empty($campanha)) {
 
-                try {
-
-                    $retorno = $this->executarEmail($servidor, $campanha);
-
-                    EmailEnvios::create(
-                            array('id_client' => $campanha->id_client,
-                                'id_email_campanha' => $campanha->id_campanha,
-                                'log' => $retorno['msg'],
-                                'status' => $retorno['tipo'])
-                    );
-
-                    Robo::echoPlus('Sucesso');
-                } catch (Exception $e) {
-                    Robo::echoPlus('Erro ao salvar log.' . $e->getMessage());
+                if ($campanha->status_campanha == 'A') {
+                    EmailCampanha::find($campanha->id_campanha)->update(array('status' => 'E'));
+                    Robo::echoPlus('Inicia a execução da campanha.');
                 }
+
+                $clientsCampanhas = $this->getClientesCampanhaEmail($campanha->id_campanha);
+
+                 if (count($clientsCampanhas) > 0) {
+
+                    foreach ($clientsCampanhas as $clientsCampanha) {
+
+                        try {
+
+                            $retorno = $this->executarEmail($servidor, $campanha, $clientsCampanha);
+
+                            EmailEnvios::create(
+                                    array('id_client' => $clientsCampanha->id_client,
+                                        'id_email_campanha' => $campanha->id_campanha,
+                                        'log' => $retorno['msg'],
+                                        'status' => $retorno['tipo'])
+                            );
+
+                            Robo::echoPlus('E-mail enviado com sucesso');
+                        } catch (Exception $e) {
+                            Robo::echoPlus('Erro ao salvar log.' . $e->getMessage());
+                        }
+                    }
+                } else {
+                    EmailCampanha::find($campanha->id_campanha)->update(array('status' => 'F'));
+                    Robo::echoPlus('Campanha finalizada.');
+                }
+            } else {
+                Robo::echoPlus('Nenhuma campanha encontrada.');
             }
         } else {
             Robo::echoPlus('Nenhum servidor de E-mail encontrado.');
         }
     }
 
-    public function executarEmail($servidor, $campanha) {
+    public function executarEmail($servidor, $campanha, $clientsCampanha) {
 
         $mail = new PHPMailer(true); // Passing `true` enables exceptions
 
@@ -86,7 +106,7 @@ class RoboController extends Controller {
             $mail->FromName = 'Gustavo';
 
 // Destinatário
-            $mail->AddAddress($campanha->email_client, $campanha->name_client);
+            $mail->AddAddress($clientsCampanha->email_client, $clientsCampanha->name_client);
 
 // Opcional (Se quiser enviar cópia do email)
 // $mail->AddCC('copia@dominio.com.br', 'Copia');
@@ -120,23 +140,33 @@ class RoboController extends Controller {
     public function getCampanhaEmail() {
 
         $campanha = DB::table('email_campanhas')->select([
+                    'email_campanhas.id as id_campanha',
+                    'email_campanhas.name as name_campanha',
+                    'email_campanhas.msg as msg_campanha',
+                    'email_campanhas.status as status_campanha',
+                ])->whereIn('email_campanhas.status', ['E', 'A'])
+                ->orderBy('email_campanhas.created_at', 'desc')
+                ->limit(1)
+                ->first();
+
+        return $campanha;
+    }
+
+    public function getClientesCampanhaEmail($id_campanha) {
+
+        $campanha = DB::table('clients')->select([
                             'clients.id as id_client',
                             'clients.name as name_client',
                             'clients.email as email_client',
-                            'clients.telefone as telefone_client',
-                            'email_campanhas.id as id_campanha',
-                            'email_campanhas.name as name_campanha',
-                            'email_campanhas.msg as msg_campanha',
-                                //DB::raw("DATE_FORMAT(email_campanhas.created_at, '%d/%m/%Y %H:%i') as created_at"),
+                            'clients.telefone as telefone_client'
                         ])
-                        ->join('email_campanha_grupos', 'email_campanha_grupos.id_email_campanha', '=', 'email_campanhas.id')
-                        ->join('clientsgrupos', 'clientsgrupos.id_grupo', '=', 'email_campanha_grupos.id_grupo')
-                        ->join('clients', 'clients.id', '=', 'clientsgrupos.id_client')
-                        ->where('email_campanhas.status', '=', 'A')
+                        ->join('clientsgrupos', 'clientsgrupos.id_client', '=', 'clients.id')
+                        ->join('email_campanha_grupos', 'email_campanha_grupos.id_grupo', '=', 'clientsgrupos.id_grupo')
+                        ->where('email_campanha_grupos.id_email_campanha', '=', $id_campanha)
                         ->whereRaw(DB::raw('NOT EXISTS (SELECT id FROM email_envios '
                                         . 'WHERE email_envios.id_client = clients.id '
-                                        . 'AND email_envios.id_email_campanha = email_campanhas.id)')
-                        )->limit(10)->get();
+                                        . 'AND email_envios.id_email_campanha = email_campanha_grupos.id_email_campanha)')
+                        )->limit(1)->get();
 
         return $campanha;
     }
@@ -149,43 +179,106 @@ class RoboController extends Controller {
 
         if (!empty($servidor)) {
 
-            $campanhas = $this->getCampanhaSms();
+            $campanha = $this->getCampanhaSms();
+  
+            if (!empty($campanha)) {
 
-            foreach ($campanhas as $campanha) {
-
-                try {
-
-                    $retorno = $this->executarSms($servidor, $campanha);
-
-                    SmsEnvios::create(
-                            array('id_client' => $campanha->id_client,
-                                'id_sms_campanha' => $campanha->id_campanha,
-                                'log' => $retorno['msg'],
-                                'status' => $retorno['tipo'])
-                    );
-
-                    Robo::echoPlus('Sucesso');
-                } catch (Exception $e) {
-                    Robo::echoPlus('Erro ao salvar log.' . $e->getMessage());
+                if ($campanha->status_campanha == 'A') {
+                    SmsCampanha::find($campanha->id_campanha)->update(array('status' => 'E'));
+                    Robo::echoPlus('Inicia a execução da campanha.');
                 }
+
+                $clientsCampanhas = $this->getClientesCampanhaSms($campanha->id_campanha);
+                          
+                if (count($clientsCampanhas) > 0) {
+
+                    foreach ($clientsCampanhas as $clientsCampanha) {
+
+                        try {
+
+                            $retorno = $this->executarSms($servidor, $campanha, $clientsCampanha);
+
+                            SmsEnvios::create(
+                                    array('id_client' => $clientsCampanha->id_client,
+                                        'id_sms_campanha' => $campanha->id_campanha,
+                                        'log' => $retorno['msg'],
+                                        'status' => $retorno['tipo'])
+                            );
+
+                            Robo::echoPlus('Sms enviado com sucesso');
+                        } catch (Exception $e) {
+                            Robo::echoPlus('Erro ao salvar log.' . $e->getMessage());
+                        }
+                    }
+                } else {
+                    SmsCampanha::find($campanha->id_campanha)->update(array('status' => 'F'));
+                    Robo::echoPlus('Campanha finalizada.');
+                }
+            } else {
+                Robo::echoPlus('Nenhuma campanha encontrada.');
             }
         } else {
-            Robo::echoPlus('Nenhum servidor de SMS encontrado.');
+            Robo::echoPlus('Nenhum servidor de Sms encontrado.');
         }
     }
 
-    public function executarSms($servidor, $campanha) {
+    public function getServidorSms() {
+
+        $server = DB::table('sms_servers')->select([
+                    '*',
+                ])
+                ->where('sms_servers.status', '=', 'A')
+                ->first();
+
+        return $server;
+    }
+
+    public function getCampanhaSms() {
+
+        $campanha = DB::table('sms_campanhas')->select([
+                    'sms_campanhas.id as id_campanha',
+                    'sms_campanhas.name as name_campanha',
+                    'sms_campanhas.msg as msg_campanha',
+                    'sms_campanhas.status as status_campanha',
+                ])->whereIn('sms_campanhas.status', ['E', 'A'])
+                ->orderBy('sms_campanhas.created_at', 'desc')
+                ->limit(1)
+                ->first();
+
+        return $campanha;
+    }
+
+    public function getClientesCampanhaSms($id_campanha) {
+
+        $campanha = DB::table('clients')->select([
+                            'clients.id as id_client',
+                            'clients.name as name_client',
+                            'clients.email as email_client',
+                            'clients.telefone as telefone_client'
+                        ])
+                        ->join('clientsgrupos', 'clientsgrupos.id_client', '=', 'clients.id')
+                        ->join('sms_campanha_grupos', 'sms_campanha_grupos.id_grupo', '=', 'clientsgrupos.id_grupo')
+                        ->where('sms_campanha_grupos.id_sms_campanha', '=', $id_campanha)
+                        ->whereRaw(DB::raw('NOT EXISTS (SELECT id FROM sms_envios '
+                                        . 'WHERE sms_envios.id_client = clients.id '
+                                        . 'AND sms_envios.id_sms_campanha = sms_campanha_grupos.id_sms_campanha)')
+                        )->limit(1)->get();
+
+        return $campanha;
+    }
+
+    public function executarSms($servidor, $campanha, $clientsCampanha) {
 
         try {
 
-            if (empty($campanha->telefone_client)) {
+            if (empty($clientsCampanha->telefone_client)) {
                 throw new Exception('Sem numero de telefone.');
             }
 
             $remover = array("à" => "a", "á" => "a", "ã" => "a", "â" => "a", "é" => "e", "ê" => "e", "ì" => "i", "í" => "i", "ó" => "o", "õ" => "o", "ô" => "o", "ú" => "u", "ü" => "u", "ç" => "c", "À" => "A", "Á" => "A", "Ã" => "A", "Â" => "A", "É" => "E", "Ê" => "E", "Í" => "I", "Ó" => "O", "Õ" => "O", "Ô" => "O", "Ù" => "U", "Ú" => "U", "Ü" => "U", "Ç" => "C");
             $msg = strtr($campanha->msg_campanha, $remover);
 
-            $nTelefone = str_replace(array(' ', '-', '(', ')'), '', $campanha->telefone_client);
+            $nTelefone = str_replace(array(' ', '-', '(', ')'), '', $clientsCampanha->telefone_client);
 
             $url = $servidor->host;
 
@@ -227,41 +320,6 @@ class RoboController extends Controller {
         } catch (Exception $e) {
             return array('tipo' => 'E', 'msg' => ('Mensagem não enviada. Mailer Error: ' . $e->getMessage()));
         }
-    }
-
-    public function getServidorSms() {
-
-        $server = DB::table('sms_servers')->select([
-                    '*',
-                ])
-                ->where('sms_servers.status', '=', 'A')
-                ->first();
-
-        return $server;
-    }
-
-    public function getCampanhaSms() {
-
-        $campanha = DB::table('sms_campanhas')->select([
-                            'clients.id as id_client',
-                            'clients.name as name_client',
-                            'clients.email as sms_email',
-                            'clients.telefone as telefone_client',
-                            'sms_campanhas.id as id_campanha',
-                            'sms_campanhas.name as name_campanha',
-                            'sms_campanhas.msg as msg_campanha',
-                                //DB::raw("DATE_FORMAT(sms_campanhas.created_at, '%d/%m/%Y %H:%i') as created_at"),
-                        ])
-                        ->join('sms_campanha_grupos', 'sms_campanha_grupos.id_sms_campanha', '=', 'sms_campanhas.id')
-                        ->join('clientsgrupos', 'clientsgrupos.id_grupo', '=', 'sms_campanha_grupos.id_grupo')
-                        ->join('clients', 'clients.id', '=', 'clientsgrupos.id_client')
-                        ->where('sms_campanhas.status', '=', 'A')
-                        ->whereRaw(DB::raw('NOT EXISTS (SELECT id FROM sms_envios '
-                                        . 'WHERE sms_envios.id_client = clients.id '
-                                        . 'AND sms_envios.id_sms_campanha = sms_campanhas.id)')
-                        )->limit(10)->get();
-
-        return $campanha;
     }
 
 }

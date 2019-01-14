@@ -49,8 +49,9 @@
                             <div class="form-group">
                                 <label for="status">Status</label>
                                 <select required="true" id="status" name="status" class="form-control select2">
-                                    <option value="A" {{ old('status', ( empty($emailcampanha->status) ? '' : $emailcampanha->status)) == 'A' ? 'selected' : '' }} >Ativo</option>
-                                    <option value="I" {{ old('status', ( empty($emailcampanha->status) ? '' : $emailcampanha->status)) == 'I' ? 'selected' : '' }} >Inativo</option>
+                                    <option value="A" {{ old('status', ( empty($smscampanha->status) ? '' : $smscampanha->status)) == 'A' ? 'selected' : '' }} >Aguardando</option>
+                                    <option value="E" {{ old('status', ( empty($smscampanha->status) ? '' : $smscampanha->status)) == 'E' ? 'selected' : '' }} >Executando</option>
+                                    <option value="F" {{ old('status', ( empty($smscampanha->status) ? '' : $smscampanha->status)) == 'F' ? 'selected' : '' }} >Finalizado</option>
                                 </select>
                             </div>
                         </div>

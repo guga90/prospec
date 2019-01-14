@@ -20,7 +20,7 @@ class CreateEmailCampanhasTable extends Migration {
             $table->integer('id_user')->unsigned()->nullable();
             $table->foreign('id_user')->references('id')->on('users');            
             $table->text('msg')->nullable();            
-            $table->enum('status', array('A', 'I'))->nullable();                        
+            $table->enum('status', array('A', 'E', 'F'))->nullable();  //Aguardando, Executando, Finalizado                     
             $table->timestamps();
         });
     }

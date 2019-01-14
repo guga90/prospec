@@ -32,8 +32,9 @@
                     <table id="datatable_default" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Descrição</th>
-                                <th>Email</th>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Telefone</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
@@ -45,7 +46,7 @@
                             <tr>
                                 <td>{{ $client->name }}</td>                                
                                 <td>{{ $client->email }}</td>
-                                <td>{{ $client->email }}</td>
+                                <td>{{ $client->telefone }}</td>
                                 <td>
                                     <div class="row">
                                     <!--a class="btn btn-info btn-sm" href="{{ route('client.show',$client->id) }}"><i class="glyphicon glyphicon-th-large"></i></a-->

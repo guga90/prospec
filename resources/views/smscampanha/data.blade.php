@@ -43,7 +43,23 @@
 
                             <tr>
                                 <td>{{ $smscampanha->name }}</td>
-                                <td>{{ $smscampanha->status == 'A' ? 'Ativo' : 'Inativo'  }}</td>
+                                <td>
+
+                                    @switch($smscampanha->status)
+                                    @case('A')
+                                    Aguardando
+                                    @break
+
+                                    @case('E')
+                                    Executando
+                                    @break
+
+                                    @default
+                                    Finalizado
+                                    @endswitch
+
+
+                                </td>
                                 <td>
                                     <div class="row">
                                     <!--a class="btn btn-info btn-sm" href="{{ route('smscampanha.show',$smscampanha->id) }}"><i class="glyphicon glyphicon-th-large"></i></a-->
